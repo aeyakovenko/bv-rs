@@ -59,10 +59,11 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/bv/macros.rs.html#27-41' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class="rust macro">
+               </span><a class='srclink' href='../src/bv/macros.rs.html#27-46' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class="rust macro">
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">bit_vec</span> {
     ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span> ; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>:<span class="ident">expr</span> ) <span class="op">=&gt;</span> { ... };
     ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span> ),<span class="op">*</span> ) <span class="op">=&gt;</span> { ... };
+    ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span>, )<span class="op">*</span> ) <span class="op">=&gt;</span> { ... };
 }</pre>
 </div><div class='docblock'><p>Like <code>vec!</code> but for <a href="struct.BitVec.html"><code>BitVec</code></a>.</p>
 <p>The <code>bit_vec!</code> macro creates a <code>BitVec</code> literal. It takes two forms:</p>

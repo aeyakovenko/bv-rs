@@ -772,15 +772,86 @@
 <span id="715">715</span>
 <span id="716">716</span>
 <span id="717">717</span>
+<span id="718">718</span>
+<span id="719">719</span>
+<span id="720">720</span>
+<span id="721">721</span>
+<span id="722">722</span>
+<span id="723">723</span>
+<span id="724">724</span>
+<span id="725">725</span>
+<span id="726">726</span>
+<span id="727">727</span>
+<span id="728">728</span>
+<span id="729">729</span>
+<span id="730">730</span>
+<span id="731">731</span>
+<span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cmp</span>, <span class="ident">fmt</span>, <span class="ident">hash</span>, <span class="ident">ptr</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="self">self</span>, <span class="ident">Range</span>, <span class="ident">RangeFrom</span>, <span class="ident">RangeTo</span>, <span class="ident">RangeFull</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Range</span>, <span class="ident">RangeFrom</span>, <span class="ident">RangeTo</span>, <span class="ident">RangeFull</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">inclusive_range</span>)]</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">RangeInclusive</span>, <span class="ident">RangeToInclusive</span>};
 
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">traits</span>::{<span class="ident">Bits</span>, <span class="ident">BitsMut</span>, <span class="ident">BitSliceable</span>};
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">storage</span>::<span class="ident">BlockType</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">inclusive_range</span>)]</span>
+<span class="kw">use</span> <span class="ident">util</span>;
+<span class="kw">use</span> <span class="ident">iter</span>::<span class="ident">BlockIter</span>;
+<span class="kw">use</span> <span class="ident">traits</span>::{<span class="ident">Bits</span>, <span class="ident">BitsMut</span>, <span class="ident">BitSliceable</span>};
+<span class="kw">use</span> <span class="ident">storage</span>::{<span class="ident">Address</span>, <span class="ident">BlockType</span>};
 
 <span class="comment">/*
  * We represent bit-slices as raw pointers to `Block`s. The slice stores an
@@ -843,6 +914,32 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Creates a `BitSlice` from an array slice of blocks.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The size is always a multiple of</span>
+    <span class="doccomment">/// `Block::nbits()`. If you want a different size, slice.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use bv::{BitSlice, BitSliceable};</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let v = vec![0b01010011u16, 0u16];</span>
+    <span class="doccomment">/// let slice = BitSlice::from_slice(&amp;v).bit_slice(..7);</span>
+    <span class="doccomment">/// assert_eq!( slice.len(), 7 );</span>
+    <span class="doccomment">/// assert_eq!( slice[0], true );</span>
+    <span class="doccomment">/// assert_eq!( slice[1], true );</span>
+    <span class="doccomment">/// assert_eq!( slice[2], false );</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_slice</span>(<span class="ident">blocks</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">Block</span>]) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">BitSlice</span> {
+            <span class="ident">bits</span>:   <span class="ident">blocks</span>.<span class="ident">as_ptr</span>(),
+            <span class="ident">offset</span>: <span class="number">0</span>,
+            <span class="ident">len</span>:    <span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">blocks</span>.<span class="ident">len</span>()),
+            <span class="ident">marker</span>: <span class="ident">PhantomData</span>,
+        }
+    }
+
     <span class="doccomment">/// Creates a `BitSlice` from a pointer to its data, an offset where the bits start, and the</span>
     <span class="doccomment">/// number of available bits.</span>
     <span class="doccomment">///</span>
@@ -869,32 +966,6 @@
             <span class="ident">bits</span>,
             <span class="ident">offset</span>,
             <span class="ident">len</span>,
-            <span class="ident">marker</span>: <span class="ident">PhantomData</span>,
-        }
-    }
-
-    <span class="doccomment">/// Creates a `BitSlice` from an array slice of blocks.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The size is always a multiple of</span>
-    <span class="doccomment">/// `Block::nbits()`. If you want a different size, slice.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use bv::{BitSlice, BitSliceable};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let v = vec![0b01010011u16, 0u16];</span>
-    <span class="doccomment">/// let slice = BitSlice::from_slice(&amp;v).bit_slice(..7);</span>
-    <span class="doccomment">/// assert_eq!( slice.len(), 7 );</span>
-    <span class="doccomment">/// assert_eq!( slice[0], true );</span>
-    <span class="doccomment">/// assert_eq!( slice[1], true );</span>
-    <span class="doccomment">/// assert_eq!( slice[2], false );</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_slice</span>(<span class="ident">blocks</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">Block</span>]) <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="ident">BitSlice</span> {
-            <span class="ident">bits</span>:   <span class="ident">blocks</span>.<span class="ident">as_ptr</span>(),
-            <span class="ident">offset</span>: <span class="number">0</span>,
-            <span class="ident">len</span>:    <span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">blocks</span>.<span class="ident">len</span>()),
             <span class="ident">marker</span>: <span class="ident">PhantomData</span>,
         }
     }
@@ -933,18 +1004,22 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>
     }
-
-    <span class="doccomment">/// Gets an iterator over the blocks of the slice.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note that this iterates over whole blocks, with a partial block only at the end. That</span>
-    <span class="doccomment">/// means that if the bit-slice offset is non-zero, these blocks may not correspond to the</span>
-    <span class="doccomment">/// blocks retrieved by `Bits::get_block`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">block_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">BitSliceBlockIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
-        <span class="ident">BitSliceBlockIter</span>(<span class="self">self</span>)
-    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Creates a `BitSliceMut` from a mutable array slice of blocks.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The size is always a multiple of `Block::nbits()`. If you want a different size,</span>
+    <span class="doccomment">/// slice.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_slice</span>(<span class="ident">blocks</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">Block</span>]) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">BitSliceMut</span> {
+            <span class="ident">bits</span>:   <span class="ident">blocks</span>.<span class="ident">as_mut_ptr</span>(),
+            <span class="ident">offset</span>: <span class="number">0</span>,
+            <span class="ident">len</span>:    <span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">blocks</span>.<span class="ident">len</span>()),
+            <span class="ident">marker</span>: <span class="ident">PhantomData</span>,
+        }
+    }
+
     <span class="doccomment">/// Creates a `BitSliceMut` from a pointer to its data, an offset where the bits start, and</span>
     <span class="doccomment">/// the number of available bits.</span>
     <span class="doccomment">///</span>
@@ -960,19 +1035,6 @@
         }
     }
 
-    <span class="doccomment">/// Creates a `BitSliceMut` from a mutable array slice of blocks.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The size is always a multiple of `Block::nbits()`. If you want a different size,</span>
-    <span class="doccomment">/// slice.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_slice</span>(<span class="ident">blocks</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">Block</span>]) <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="ident">BitSliceMut</span> {
-            <span class="ident">bits</span>:   <span class="ident">blocks</span>.<span class="ident">as_mut_ptr</span>(),
-            <span class="ident">offset</span>: <span class="number">0</span>,
-            <span class="ident">len</span>:    <span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">blocks</span>.<span class="ident">len</span>()),
-            <span class="ident">marker</span>: <span class="ident">PhantomData</span>,
-        }
-    }
-
     <span class="doccomment">/// The number of bits in the slice.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">len</span>
@@ -983,8 +1045,8 @@
         <span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>
     }
 
-    <span class="doccomment">/// Converts a `BitSliceMut` into an immutable `BitSlice`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_immut</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Converts a mutable bit slice to immutable.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_bit_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
         <span class="ident">BitSlice</span> {
             <span class="ident">bits</span>:   <span class="self">self</span>.<span class="ident">bits</span>,
             <span class="ident">offset</span>: <span class="self">self</span>.<span class="ident">offset</span>,
@@ -992,10 +1054,100 @@
             <span class="ident">marker</span>: <span class="ident">PhantomData</span>,
         }
     }
+}
 
-    <span class="doccomment">/// Gets an iterator over the blocks of the slice.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">block_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">BitSliceBlockIter</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
-        <span class="ident">BitSliceBlockIter</span>(<span class="self">self</span>.<span class="ident">as_immut</span>())
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">slice</span>.<span class="ident">as_bit_slice</span>()
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">Block</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">Block</span>]) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">BitSlice</span>::<span class="ident">from_slice</span>(<span class="ident">slice</span>)
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> [<span class="ident">Block</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> [<span class="ident">Block</span>]) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">BitSliceMut</span>::<span class="ident">from_slice</span>(<span class="ident">slice</span>)
+    }
+}
+
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_bit_with_offset</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span>(
+    <span class="ident">bits</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Block</span>, <span class="ident">offset</span>: <span class="ident">u8</span>, <span class="ident">position</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+
+    <span class="kw">let</span> <span class="ident">address</span>   <span class="op">=</span> <span class="ident">Address</span>::<span class="ident">new</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>(<span class="ident">position</span> <span class="op">+</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">offset</span>));
+    <span class="kw">let</span> <span class="ident">ptr</span>       <span class="op">=</span> <span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">address</span>.<span class="ident">block_index</span> <span class="kw">as</span> <span class="ident">isize</span>);
+    <span class="kw">let</span> <span class="ident">block</span>     <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">read</span>(<span class="ident">ptr</span>);
+    <span class="ident">block</span>.<span class="ident">get_bit</span>(<span class="ident">address</span>.<span class="ident">bit_offset</span>)
+}
+
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">set_bit_with_offset</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span>(
+    <span class="ident">bits</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Block</span>, <span class="ident">offset</span>: <span class="ident">u8</span>, <span class="ident">position</span>: <span class="ident">u64</span>, <span class="ident">value</span>: <span class="ident">bool</span>) {
+
+    <span class="kw">let</span> <span class="ident">address</span>   <span class="op">=</span> <span class="ident">Address</span>::<span class="ident">new</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>(<span class="ident">position</span> <span class="op">+</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">offset</span>));
+    <span class="kw">let</span> <span class="ident">ptr</span>       <span class="op">=</span> <span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">address</span>.<span class="ident">block_index</span> <span class="kw">as</span> <span class="ident">isize</span>);
+    <span class="kw">let</span> <span class="ident">old_block</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">read</span>(<span class="ident">ptr</span>);
+    <span class="kw">let</span> <span class="ident">new_block</span> <span class="op">=</span> <span class="ident">old_block</span>.<span class="ident">with_bit</span>(<span class="ident">address</span>.<span class="ident">bit_offset</span>, <span class="ident">value</span>);
+    <span class="ident">ptr</span>::<span class="ident">write</span>(<span class="ident">ptr</span>, <span class="ident">new_block</span>);
+}
+
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_block_with_offset</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span>(
+    <span class="ident">bits</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Block</span>, <span class="ident">offset</span>: <span class="ident">u8</span>, <span class="ident">len</span>: <span class="ident">u64</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
+
+    <span class="kw">let</span> <span class="ident">value_mask</span> <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">low_mask</span>(<span class="ident">cmp</span>::<span class="ident">min</span>(<span class="ident">len</span> <span class="op">-</span> <span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">position</span>),
+                                              <span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="kw">as</span> <span class="ident">u64</span>) <span class="kw">as</span> <span class="ident">usize</span>);
+
+    <span class="kw">let</span> <span class="ident">block1</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">read</span>(<span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">position</span> <span class="kw">as</span> <span class="ident">isize</span>));
+    <span class="kw">if</span> <span class="ident">offset</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">return</span> <span class="ident">block1</span> <span class="op">&amp;</span> <span class="ident">value_mask</span>;
+    }
+
+    <span class="kw">let</span> <span class="ident">block2</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">position</span> <span class="op">+</span> <span class="number">1</span> <span class="op">&lt;</span> <span class="ident">Block</span>::<span class="ident">ceil_div_nbits</span>(<span class="ident">len</span> <span class="op">+</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">offset</span>)) {
+        <span class="ident">ptr</span>::<span class="ident">read</span>(<span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">position</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">+</span> <span class="number">1</span>))
+    } <span class="kw">else</span> {
+        <span class="ident">Block</span>::<span class="ident">zero</span>()
+    };
+
+    <span class="kw">let</span> <span class="ident">shift1</span> <span class="op">=</span> <span class="ident">offset</span> <span class="kw">as</span> <span class="ident">usize</span>;
+    <span class="kw">let</span> <span class="ident">shift2</span> <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="op">-</span> <span class="ident">shift1</span>;
+
+    <span class="kw">let</span> <span class="ident">chunk1</span> <span class="op">=</span> <span class="ident">block1</span>.<span class="ident">get_bits</span>(<span class="ident">shift1</span>, <span class="ident">shift2</span>);
+    <span class="kw">let</span> <span class="ident">chunk2</span> <span class="op">=</span> <span class="ident">block2</span>.<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">shift1</span>) <span class="op">&lt;&lt;</span> <span class="ident">shift2</span>;
+
+    (<span class="ident">chunk1</span> <span class="op">|</span> <span class="ident">chunk2</span>) <span class="op">&amp;</span> <span class="ident">value_mask</span>
+}
+
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">set_block_with_offset</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span>(
+    <span class="ident">bits</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Block</span>, <span class="ident">offset</span>: <span class="ident">u8</span>, <span class="ident">len</span>: <span class="ident">u64</span>, <span class="ident">position</span>: <span class="ident">usize</span>, <span class="ident">value</span>: <span class="ident">Block</span>) {
+
+    <span class="kw">let</span> <span class="ident">start_bit</span>     <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">position</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">limit_bit</span> <span class="op">=</span> <span class="ident">start_bit</span> <span class="op">+</span> <span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="kw">as</span> <span class="ident">u64</span>;
+
+    <span class="kw">let</span> <span class="ident">ptr1</span>          <span class="op">=</span> <span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">position</span> <span class="kw">as</span> <span class="ident">isize</span>);
+
+    <span class="kw">if</span> <span class="ident">offset</span> <span class="op">==</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">limit_bit</span> <span class="op">&lt;=</span> <span class="ident">len</span> {
+        <span class="ident">ptr</span>::<span class="ident">write</span>(<span class="ident">ptr1</span>, <span class="ident">value</span>);
+        <span class="kw">return</span>;
+    } <span class="kw">else</span> {
+        <span class="ident">limit_bit</span> <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">min</span>(<span class="ident">limit_bit</span>, <span class="ident">len</span>);
+    }
+
+    <span class="kw">let</span> <span class="ident">shift1</span>      <span class="op">=</span> <span class="ident">offset</span> <span class="kw">as</span> <span class="ident">usize</span>;
+    <span class="kw">let</span> <span class="ident">shift2</span>      <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="op">-</span> <span class="ident">shift1</span>;
+
+    <span class="kw">let</span> <span class="ident">bits_size1</span>  <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">min</span>((<span class="ident">limit_bit</span> <span class="op">-</span> <span class="ident">start_bit</span>) <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">shift2</span>);
+    <span class="kw">let</span> <span class="ident">old_block1</span>  <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">read</span>(<span class="ident">ptr1</span>);
+    <span class="kw">let</span> <span class="ident">new_block1</span>  <span class="op">=</span> <span class="ident">old_block1</span>.<span class="ident">with_bits</span>(<span class="ident">shift1</span>, <span class="ident">bits_size1</span>, <span class="ident">value</span>);
+    <span class="ident">ptr</span>::<span class="ident">write</span>(<span class="ident">ptr1</span>, <span class="ident">new_block1</span>);
+
+    <span class="kw">if</span> <span class="ident">position</span> <span class="op">+</span> <span class="number">1</span> <span class="op">&lt;</span> <span class="ident">Block</span>::<span class="ident">ceil_div_nbits</span>(<span class="ident">len</span> <span class="op">+</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">offset</span>)) {
+        <span class="kw">let</span> <span class="ident">ptr2</span>        <span class="op">=</span> <span class="ident">ptr1</span>.<span class="ident">offset</span>(<span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">bits_size2</span>  <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">min</span>((<span class="ident">limit_bit</span> <span class="op">-</span> <span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">position</span> <span class="op">+</span> <span class="number">1</span>)) <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">shift1</span>);
+        <span class="kw">let</span> <span class="ident">old_block2</span>  <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">read</span>(<span class="ident">ptr2</span>);
+        <span class="kw">let</span> <span class="ident">new_block2</span>  <span class="op">=</span> <span class="ident">old_block2</span>.<span class="ident">with_bits</span>(<span class="number">0</span>, <span class="ident">bits_size2</span>, <span class="ident">value</span> <span class="op">&gt;&gt;</span> <span class="ident">shift2</span>);
+        <span class="ident">ptr</span>::<span class="ident">write</span>(<span class="ident">ptr2</span>, <span class="ident">new_block2</span>);
     }
 }
 
@@ -1006,15 +1158,19 @@
         <span class="self">self</span>.<span class="ident">len</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">bit_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
-        <span class="self">self</span>.<span class="ident">offset</span>
+    <span class="kw">fn</span> <span class="ident">get_bit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">bit_len</span>(), <span class="string">&quot;BitSlice::get_bit: out of bounds&quot;</span>);
+
+        <span class="kw">unsafe</span> {
+            <span class="ident">get_bit_with_offset</span>(<span class="self">self</span>.<span class="ident">bits</span>, <span class="self">self</span>.<span class="ident">offset</span>, <span class="ident">position</span>)
+        }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Bits</span><span class="op">&gt;</span>::<span class="ident">Block</span> {
+    <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">block_len</span>(), <span class="string">&quot;BitSlice::get_block: out of bounds&quot;</span>);
 
         <span class="kw">unsafe</span> {
-            <span class="ident">ptr</span>::<span class="ident">read</span>(<span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">position</span> <span class="kw">as</span> <span class="ident">isize</span>))
+            <span class="ident">get_block_with_offset</span>(<span class="self">self</span>.<span class="ident">bits</span>, <span class="self">self</span>.<span class="ident">offset</span>, <span class="self">self</span>.<span class="ident">len</span>, <span class="ident">position</span>)
         }
     }
 }
@@ -1026,49 +1182,44 @@
         <span class="self">self</span>.<span class="ident">len</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">bit_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
-        <span class="self">self</span>.<span class="ident">offset</span>
+    <span class="kw">fn</span> <span class="ident">get_bit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">bit_len</span>(), <span class="string">&quot;BitSliceMut::get_bit: out of bounds&quot;</span>);
+
+        <span class="kw">unsafe</span> {
+            <span class="ident">get_bit_with_offset</span>(<span class="self">self</span>.<span class="ident">bits</span>, <span class="self">self</span>.<span class="ident">offset</span>, <span class="ident">position</span>)
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">block_len</span>(), <span class="string">&quot;BitSliceMut::get_block: out of bounds&quot;</span>);
 
         <span class="kw">unsafe</span> {
-            <span class="ident">ptr</span>::<span class="ident">read</span>(<span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">position</span> <span class="kw">as</span> <span class="ident">isize</span>))
+            <span class="ident">get_block_with_offset</span>(<span class="self">self</span>.<span class="ident">bits</span>, <span class="self">self</span>.<span class="ident">offset</span>, <span class="self">self</span>.<span class="ident">len</span>, <span class="ident">position</span>)
         }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">BitsMut</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">set_bit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">position</span>: <span class="ident">u64</span>, <span class="ident">value</span>: <span class="ident">bool</span>) {
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">bit_len</span>(), <span class="string">&quot;BitSliceMut::set_bit: out of bounds&quot;</span>);
+
+        <span class="kw">unsafe</span> {
+            <span class="ident">set_bit_with_offset</span>(<span class="self">self</span>.<span class="ident">bits</span>, <span class="self">self</span>.<span class="ident">offset</span>, <span class="ident">position</span>, <span class="ident">value</span>);
+        }
+    }
+
     <span class="kw">fn</span> <span class="ident">set_block</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>, <span class="ident">value</span>: <span class="ident">Block</span>) {
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">block_len</span>(), <span class="string">&quot;BitSliceMut::set_block: out of bounds&quot;</span>);
 
         <span class="kw">unsafe</span> {
-            <span class="ident">ptr</span>::<span class="ident">write</span>(<span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">position</span> <span class="kw">as</span> <span class="ident">isize</span>), <span class="ident">value</span>)
+            <span class="ident">set_block_with_offset</span>(<span class="self">self</span>.<span class="ident">bits</span>, <span class="self">self</span>.<span class="ident">offset</span>, <span class="self">self</span>.<span class="ident">len</span>, <span class="ident">position</span>, <span class="ident">value</span>);
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">ops</span>::<span class="ident">Index</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">bool</span>;
-
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">bool</span> {
-        <span class="kw">static</span> <span class="ident">TRUE</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        <span class="kw">static</span> <span class="ident">FALSE</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">false</span>;
-
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">get_bit</span>(<span class="ident">index</span>) {<span class="kw-2">&amp;</span><span class="ident">TRUE</span>} <span class="kw">else</span> {<span class="kw-2">&amp;</span><span class="ident">FALSE</span>}
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">ops</span>::<span class="ident">Index</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">bool</span>;
-
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">bool</span> {
-        <span class="kw">static</span> <span class="ident">TRUE</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        <span class="kw">static</span> <span class="ident">FALSE</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">false</span>;
-
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">get_bit</span>(<span class="ident">index</span>) {<span class="kw-2">&amp;</span><span class="ident">TRUE</span>} <span class="kw">else</span> {<span class="kw-2">&amp;</span><span class="ident">FALSE</span>}
-    }
+<span class="macro">impl_index_from_bits</span><span class="macro">!</span> {
+    <span class="kw">impl</span>[<span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span>] <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span>;
+    <span class="kw">impl</span>[<span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span>] <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
@@ -1112,18 +1263,11 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">inclusive_range</span>)]</span>
-<span class="kw">fn</span> <span class="ident">get_inclusive_bounds</span>(<span class="ident">range</span>: <span class="kw-2">&amp;</span><span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">u64</span>)<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r1</span> <span class="op">=</span> <span class="ident">range</span>.<span class="ident">clone</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r2</span> <span class="op">=</span> <span class="ident">range</span>.<span class="ident">clone</span>();
-    <span class="prelude-val">Some</span>((<span class="ident">r1</span>.<span class="ident">next</span>()<span class="question-mark">?</span>, <span class="ident">r2</span>.<span class="ident">next_back</span>()<span class="question-mark">?</span>))
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">inclusive_range</span>)]</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Slice</span> <span class="op">=</span> <span class="self">Self</span>;
 
     <span class="kw">fn</span> <span class="ident">bit_slice</span>(<span class="self">self</span>, <span class="ident">range</span>: <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> (<span class="ident">start</span>, <span class="ident">end</span>) <span class="op">=</span> <span class="ident">get_inclusive_bounds</span>(<span class="kw-2">&amp;</span><span class="ident">range</span>)
+        <span class="kw">let</span> (<span class="ident">start</span>, <span class="ident">end</span>) <span class="op">=</span> <span class="ident">util</span>::<span class="ident">get_inclusive_bounds</span>(<span class="kw-2">&amp;</span><span class="ident">range</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;BitSlice::slice: bad range&quot;</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">end</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">len</span>, <span class="string">&quot;BitSlice::slice: out of bounds&quot;</span>);
 
@@ -1145,17 +1289,16 @@
     <span class="kw">type</span> <span class="ident">Slice</span> <span class="op">=</span> <span class="self">Self</span>;
 
     <span class="kw">fn</span> <span class="ident">bit_slice</span>(<span class="self">self</span>, <span class="ident">range</span>: <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> (<span class="ident">start</span>, <span class="ident">end</span>) <span class="op">=</span> <span class="ident">get_inclusive_bounds</span>(<span class="kw-2">&amp;</span><span class="ident">range</span>)
+        <span class="kw">let</span> (<span class="ident">start</span>, <span class="ident">end</span>) <span class="op">=</span> <span class="ident">util</span>::<span class="ident">get_inclusive_bounds</span>(<span class="kw-2">&amp;</span><span class="ident">range</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;BitSliceMut::slice: bad range&quot;</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">end</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">len</span>, <span class="string">&quot;BitSliceMut::slice: out of bounds&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">start_bits</span>   <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">offset</span>) <span class="op">+</span> <span class="ident">start</span>;
-        <span class="kw">let</span> <span class="ident">start_block</span>  <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">div_nbits</span>(<span class="ident">start_bits</span>);
-        <span class="kw">let</span> <span class="ident">start_offset</span> <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">mod_nbits</span>(<span class="ident">start_bits</span>) <span class="kw">as</span> <span class="ident">u8</span>;
+        <span class="kw">let</span> <span class="ident">start_addr</span>   <span class="op">=</span> <span class="ident">Address</span>::<span class="ident">new</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>(<span class="ident">start_bits</span>);
 
         <span class="ident">BitSliceMut</span> {
-            <span class="ident">bits</span>:   <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">start_block</span> <span class="kw">as</span> <span class="ident">isize</span>) },
-            <span class="ident">offset</span>: <span class="ident">start_offset</span>,
+            <span class="ident">bits</span>:   <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">offset</span>(<span class="ident">start_addr</span>.<span class="ident">block_index</span> <span class="kw">as</span> <span class="ident">isize</span>) },
+            <span class="ident">offset</span>: <span class="ident">start_addr</span>.<span class="ident">bit_offset</span> <span class="kw">as</span> <span class="ident">u8</span>,
             <span class="ident">len</span>:    <span class="ident">end</span> <span class="op">-</span> <span class="ident">start</span> <span class="op">+</span> <span class="number">1</span>,
             <span class="ident">marker</span>: <span class="ident">PhantomData</span>,
         }
@@ -1330,32 +1473,9 @@
     }
 }
 
-<span class="doccomment">/// An iterator over the blocks of a bit slice.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BitSliceBlockIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span>(<span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span>);
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">BitSliceBlockIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">Block</span>;
-
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">len</span> <span class="op">==</span> <span class="number">0</span> { <span class="kw">return</span> <span class="prelude-val">None</span>; }
-
-        <span class="kw">let</span> <span class="ident">nbits</span>  <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">min</span>(<span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="kw">as</span> <span class="ident">u64</span>, <span class="self">self</span>.<span class="number">0</span>.<span class="ident">len</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">nbits</span> <span class="kw">as</span> <span class="ident">usize</span>));
-
-        <span class="self">self</span>.<span class="number">0</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">bit_slice</span>(<span class="ident">nbits</span> ..);
-
-        <span class="ident">result</span>
-    }
-
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">ceil_div_nbits</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">bit_len</span>());
-        (<span class="ident">len</span>, <span class="prelude-val">Some</span>(<span class="ident">len</span>))
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">BitSlice</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">cmp</span>(<span class="ident">other</span>) <span class="op">==</span> <span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Other</span>: <span class="ident">Bits</span><span class="op">&gt;</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">Other</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Other</span>::<span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Other</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="self">self</span>) <span class="op">==</span> <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="ident">other</span>)
     }
 }
 
@@ -1369,24 +1489,15 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">cmp</span>::<span class="ident">Ordering</span> {
-        <span class="kw">let</span> <span class="ident">len_ord</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">len</span>);
-        <span class="kw">if</span> <span class="ident">len_ord</span> <span class="op">!=</span> <span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span> { <span class="kw">return</span> <span class="ident">len_ord</span>; }
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ai</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">block_iter</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bi</span> <span class="op">=</span> <span class="ident">other</span>.<span class="ident">block_iter</span>();
-
-        <span class="kw">while</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">a</span>), <span class="prelude-val">Some</span>(<span class="ident">b</span>)) <span class="op">=</span> (<span class="ident">ai</span>.<span class="ident">next</span>(), <span class="ident">bi</span>.<span class="ident">next</span>()) {
-            <span class="kw">let</span> <span class="ident">elt_ord</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>);
-            <span class="kw">if</span> <span class="ident">elt_ord</span> <span class="op">!=</span> <span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span> { <span class="kw">return</span> <span class="ident">elt_ord</span>; }
-        }
-
-        <span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span>
+        <span class="kw">let</span> <span class="ident">iter1</span> <span class="op">=</span> <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="kw-2">*</span><span class="self">self</span>);
+        <span class="kw">let</span> <span class="ident">iter2</span> <span class="op">=</span> <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="kw-2">*</span><span class="ident">other</span>);
+        (<span class="ident">iter1</span>).<span class="ident">cmp</span>(<span class="ident">iter2</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">as_immut</span>().<span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">as_immut</span>())
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Other</span>: <span class="ident">Bits</span><span class="op">&gt;</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">Other</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Other</span>::<span class="ident">Block</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Other</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="self">self</span>) <span class="op">==</span> <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="ident">other</span>)
     }
 }
 
@@ -1400,14 +1511,14 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">cmp</span>::<span class="ident">Ordering</span> {
-        <span class="self">self</span>.<span class="ident">as_immut</span>().<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">as_immut</span>())
+        <span class="self">self</span>.<span class="ident">as_bit_slice</span>().<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">as_bit_slice</span>())
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span> <span class="op">+</span> <span class="ident">hash</span>::<span class="ident">Hash</span><span class="op">&gt;</span> <span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
         <span class="ident">state</span>.<span class="ident">write_u64</span>(<span class="self">self</span>.<span class="ident">bit_len</span>());
-        <span class="kw">for</span> <span class="ident">block</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">block_iter</span>() {
+        <span class="kw">for</span> <span class="ident">block</span> <span class="kw">in</span> <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="self">self</span>) {
             <span class="ident">block</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
         }
     }
@@ -1415,7 +1526,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span> <span class="op">+</span> <span class="ident">hash</span>::<span class="ident">Hash</span><span class="op">&gt;</span> <span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
-        <span class="self">self</span>.<span class="ident">as_immut</span>().<span class="ident">hash</span>(<span class="ident">state</span>);
+        <span class="self">self</span>.<span class="ident">as_bit_slice</span>().<span class="ident">hash</span>(<span class="ident">state</span>);
     }
 }
 
@@ -1434,12 +1545,13 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Block</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="self">self</span>.<span class="ident">as_immut</span>().<span class="ident">fmt</span>(<span class="ident">f</span>)
+        <span class="self">self</span>.<span class="ident">as_bit_slice</span>().<span class="ident">fmt</span>(<span class="ident">f</span>)
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {
+    <span class="kw">use</span> <span class="ident">BitVec</span>;
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1471,12 +1583,36 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">bit_slice_update_across_blocks</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bv</span>: <span class="ident">BitVec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">bit_vec</span><span class="macro">!</span>[ <span class="bool-val">true</span>; <span class="number">20</span> ];
+        <span class="ident">bv</span>.<span class="ident">set_bit</span>(<span class="number">3</span>, <span class="bool-val">false</span>);
+        <span class="ident">bv</span>.<span class="ident">set_bit</span>(<span class="number">7</span>, <span class="bool-val">false</span>);
+
+        {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slice</span>: <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bv</span>).<span class="ident">bit_slice</span>(<span class="number">4</span>..<span class="number">12</span>);
+            <span class="ident">slice</span>.<span class="ident">set_bit</span>(<span class="number">1</span>, <span class="bool-val">false</span>);
+            <span class="ident">slice</span>.<span class="ident">set_bit</span>(<span class="number">5</span>, <span class="bool-val">false</span>);
+        }
+
+        <span class="macro">assert</span><span class="macro">!</span>(  <span class="ident">bv</span>[<span class="number">0</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>(  <span class="ident">bv</span>[<span class="number">1</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>(  <span class="ident">bv</span>[<span class="number">2</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>( <span class="op">!</span><span class="ident">bv</span>[<span class="number">3</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>(  <span class="ident">bv</span>[<span class="number">4</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>( <span class="op">!</span><span class="ident">bv</span>[<span class="number">5</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>(  <span class="ident">bv</span>[<span class="number">6</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>( <span class="op">!</span><span class="ident">bv</span>[<span class="number">7</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>(  <span class="ident">bv</span>[<span class="number">8</span>] );
+        <span class="macro">assert</span><span class="macro">!</span>( <span class="op">!</span><span class="ident">bv</span>[<span class="number">9</span>] );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">debug_for_bit_slice</span>() {
         <span class="kw">let</span> <span class="ident">slice</span> <span class="op">=</span> [<span class="number">0b00110101u8</span>];
         <span class="kw">let</span> <span class="ident">bs</span> <span class="op">=</span> <span class="ident">BitSlice</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">slice</span>);
         <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="string">&quot;bit_vec![true, false, true, false, true, true, false, false]&quot;</span>;
         <span class="kw">let</span> <span class="ident">act</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">bs</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>( <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">act</span>, <span class="ident">exp</span> );
+        <span class="macro">assert_eq</span><span class="macro">!</span>( <span class="ident">act</span>, <span class="ident">exp</span> );
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">inclusive_range</span>)]</span>
