@@ -59,17 +59,17 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../src/bv/adapter.rs.html#1-1055' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Lazy bit vector adapters, including bit-wise logic.</p>
-<p>This module defines an extension trait <a href="trait.BitsExt.html"><code>BitsExt</code></a> that is implemented
-for every type that implements <a href="../trait.Bits.html"><code>Bits</code></a>. The trait provides bit-wise
-logical and other operations on bit-vector-likes.</p>
+               </span><a class='srclink' href='../../src/bv/adapter/mod.rs.html#1-143' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Lazy bit vector adapters.</p>
+<p>This module defines adapters for dealing with bit vectors and other
+types that implement <a href="../trait.Bits.html"><code>Bits</code></a>. It also defines the adaptors that
+are returned by methods of the extension trait <a href="../trait.BitsExt.html"><code>BitsExt</code></a>.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.BitAnd.html"
                                   title='struct bv::adapter::BitAnd'>BitAnd</a></td>
                            <td class='docblock-short'>
-                                <p>The result of <a href="trait.BitsExt.html#method.bit_and"><code>BitsExt::bit_and</code></a>.</p>
+                                <p>The result of <a href="../trait.BitsExt.html#method.bit_and"><code>BitsExt::bit_and</code></a>.</p>
 
                            </td>
                        </tr>
@@ -78,7 +78,7 @@ logical and other operations on bit-vector-likes.</p>
                                   title='struct bv::adapter::BitConcat'>BitConcat</a></td>
                            <td class='docblock-short'>
                                 <p>The result of
-<a href="trait.BitsExt.html#method.bit_concat"><code>BitsExt::bit_concat</code></a>.</p>
+<a href="../trait.BitsExt.html#method.bit_concat"><code>BitsExt::bit_concat</code></a>.</p>
 
                            </td>
                        </tr>
@@ -94,7 +94,7 @@ logical and other operations on bit-vector-likes.</p>
                            <td><a class="struct" href="struct.BitNot.html"
                                   title='struct bv::adapter::BitNot'>BitNot</a></td>
                            <td class='docblock-short'>
-                                <p>The result of <a href="trait.BitsExt.html#method.bit_not"><code>BitsExt::bit_not</code></a>.</p>
+                                <p>The result of <a href="../trait.BitsExt.html#method.bit_not"><code>BitsExt::bit_not</code></a>.</p>
 
                            </td>
                        </tr>
@@ -102,7 +102,7 @@ logical and other operations on bit-vector-likes.</p>
                            <td><a class="struct" href="struct.BitOr.html"
                                   title='struct bv::adapter::BitOr'>BitOr</a></td>
                            <td class='docblock-short'>
-                                <p>The result of <a href="trait.BitsExt.html#method.bit_or"><code>BitsExt::bit_or</code></a>.</p>
+                                <p>The result of <a href="../trait.BitsExt.html#method.bit_or"><code>BitsExt::bit_or</code></a>.</p>
 
                            </td>
                        </tr>
@@ -118,7 +118,15 @@ logical and other operations on bit-vector-likes.</p>
                            <td><a class="struct" href="struct.BitXor.html"
                                   title='struct bv::adapter::BitXor'>BitXor</a></td>
                            <td class='docblock-short'>
-                                <p>The result of <a href="trait.BitsExt.html#method.bit_xor"><code>BitsExt::bit_xor</code></a>.</p>
+                                <p>The result of <a href="../trait.BitsExt.html#method.bit_xor"><code>BitsExt::bit_xor</code></a>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.BitZip.html"
+                                  title='struct bv::adapter::BitZip'>BitZip</a></td>
+                           <td class='docblock-short'>
+                                <p>The result of <a href="../trait.BitsExt.html#method.bit_zip"><code>BitsExt::bit_zip</code></a>.</p>
 
                            </td>
                        </tr>

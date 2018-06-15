@@ -1043,6 +1043,8 @@
 <span id="986">986</span>
 <span id="987">987</span>
 <span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::{<span class="ident">max</span>, <span class="ident">Ordering</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
@@ -1310,7 +1312,10 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reserve</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">additional</span>: <span class="ident">u64</span>) {
         <span class="kw">let</span> <span class="ident">old_cap</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">capacity</span>();
-        <span class="self">self</span>.<span class="ident">reserve_exact</span>(<span class="ident">max</span>(<span class="number">1</span>, <span class="ident">max</span>(<span class="ident">additional</span>, <span class="ident">old_cap</span>)));
+        <span class="kw">let</span> <span class="ident">req_cap</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">additional</span>;
+        <span class="kw">if</span> <span class="ident">req_cap</span> <span class="op">&gt;</span> <span class="ident">old_cap</span> {
+            <span class="self">self</span>.<span class="ident">reserve_exact</span>(<span class="ident">max</span>(<span class="ident">additional</span>, <span class="ident">old_cap</span>));
+        }
     }
 
     <span class="doccomment">/// Adjust the capacity to hold at least `additional` additional blocks.</span>
@@ -1329,7 +1334,10 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">block_reserve</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">additional</span>: <span class="ident">usize</span>) {
         <span class="kw">let</span> <span class="ident">old_cap</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">block_capacity</span>();
-        <span class="self">self</span>.<span class="ident">block_reserve_exact</span>(<span class="ident">max</span>(<span class="number">1</span>, <span class="ident">max</span>(<span class="ident">additional</span>, <span class="ident">old_cap</span>)));
+        <span class="kw">let</span> <span class="ident">req_cap</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">block_len</span>() <span class="op">+</span> <span class="ident">additional</span>;
+        <span class="kw">if</span> <span class="ident">req_cap</span> <span class="op">&gt;</span> <span class="ident">old_cap</span> {
+            <span class="self">self</span>.<span class="ident">block_reserve_exact</span>(<span class="ident">max</span>(<span class="ident">additional</span>, <span class="ident">old_cap</span>));
+        }
     }
 
     <span class="doccomment">/// Adjust the capacity to hold at least `additional` additional bits.</span>
@@ -1575,10 +1583,7 @@
     <span class="doccomment">/// assert_eq!( bv0, bv3 );</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">bool</span>) {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="self">self</span>.<span class="ident">capacity</span>() <span class="op">-</span> <span class="number">1</span> {
-            <span class="self">self</span>.<span class="ident">reserve</span>(<span class="number">1</span>);
-        }
-
+        <span class="self">self</span>.<span class="ident">reserve</span>(<span class="number">1</span>);
         <span class="kw">let</span> <span class="ident">old_len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>;
         <span class="self">self</span>.<span class="ident">len</span> <span class="op">=</span> <span class="ident">old_len</span> <span class="op">+</span> <span class="number">1</span>;
         <span class="self">self</span>.<span class="ident">set_bit</span>(<span class="ident">old_len</span>, <span class="ident">value</span>);
@@ -1653,16 +1658,15 @@
     }
 
     <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
-        <span class="kw">if</span> <span class="ident">position</span> <span class="op">+</span> <span class="number">1</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">block_len</span>() {
-            <span class="self">self</span>.<span class="ident">bits</span>[<span class="ident">position</span>].<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">Block</span>::<span class="ident">last_block_bits</span>(<span class="self">self</span>.<span class="ident">bit_len</span>()))
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">bits</span>[<span class="ident">position</span>]
-        }
+        <span class="kw">let</span> <span class="ident">block_len</span> <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">block_bits</span>(<span class="self">self</span>.<span class="ident">bit_len</span>(), <span class="ident">position</span>);
+        <span class="self">self</span>.<span class="ident">bits</span>[<span class="ident">position</span>].<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">block_len</span>)
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockType</span><span class="op">&gt;</span> <span class="ident">BitsMut</span> <span class="kw">for</span> <span class="ident">BitVec</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">set_block</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>, <span class="ident">value</span>: <span class="ident">Block</span>) {
+        <span class="comment">// This may set out-of-bounds bits, but that&#39;s okay because</span>
+        <span class="comment">// oob bits are never observed.</span>
         <span class="self">self</span>.<span class="ident">bits</span>[<span class="ident">position</span>] <span class="op">=</span> <span class="ident">value</span>;
     }
 }
