@@ -326,6 +326,8 @@
 <span id="269">269</span>
 <span id="270">270</span>
 <span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> {<span class="ident">Bits</span>, <span class="ident">BitSliceable</span>};
 <span class="kw">use</span> <span class="ident">BlockType</span>;
@@ -563,12 +565,14 @@
         <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>;
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">R</span>: <span class="ident">Clone</span>,
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">R</span>, <span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>
+    <span class="kw">where</span> <span class="ident">Block</span>: <span class="ident">BlockType</span>,
+          <span class="ident">R</span>: <span class="ident">Clone</span>,
           <span class="ident">T</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
           <span class="ident">U</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-          <span class="ident">T</span>::<span class="ident">Slice</span>: <span class="ident">Bits</span>,
-          <span class="ident">U</span>::<span class="ident">Slice</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">T</span>::<span class="ident">Slice</span> <span class="kw">as</span> <span class="ident">Bits</span><span class="op">&gt;</span>::<span class="ident">Block</span><span class="op">&gt;</span> {
+          <span class="ident">T</span>::<span class="ident">Slice</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;</span>,
+          <span class="ident">U</span>::<span class="ident">Slice</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;</span>,
+          <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Block</span>, <span class="ident">Block</span>, <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
 
     <span class="kw">type</span> <span class="ident">Slice</span> <span class="op">=</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>::<span class="ident">Slice</span>, <span class="ident">U</span>::<span class="ident">Slice</span>, <span class="ident">F</span><span class="op">&gt;</span>;
 

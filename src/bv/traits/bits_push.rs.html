@@ -91,6 +91,16 @@
 <span id="34">34</span>
 <span id="35">35</span>
 <span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">BitsMut</span>;
 <span class="kw">use</span> <span class="ident">storage</span>::<span class="ident">BlockType</span>;
@@ -125,6 +135,16 @@
             <span class="self">self</span>.<span class="ident">push_bit</span>(<span class="ident">value</span> <span class="op">&amp;</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">one</span>() <span class="op">!=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">zero</span>());
             <span class="ident">value</span> <span class="op">=</span> <span class="ident">value</span> <span class="op">&gt;&gt;</span> <span class="number">1</span>;
         }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">BitsPush</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">push_bit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">bool</span>) {
+        <span class="self">self</span>.<span class="ident">push</span>(<span class="ident">value</span>);
+    }
+
+    <span class="kw">fn</span> <span class="ident">pop_bit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">pop</span>()
     }
 }
 

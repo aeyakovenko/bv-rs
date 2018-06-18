@@ -648,6 +648,21 @@
 <span id="591">591</span>
 <span id="592">592</span>
 <span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">storage</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">slice</span>::<span class="kw-2">*</span>;
@@ -792,6 +807,15 @@
         <span class="ident">BitVec</span> {
             <span class="ident">bits</span>: <span class="ident">Inner</span>::<span class="ident">new</span>(<span class="ident">init</span>, <span class="ident">nblocks</span>),
             <span class="ident">len</span>:  <span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">nblocks</span>),
+        }
+    }
+
+    <span class="comment">// Reallocates to have the given capacity.</span>
+    <span class="kw">fn</span> <span class="ident">reallocate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">block_cap</span>: <span class="ident">usize</span>) {
+        <span class="comment">// We know this is safe because the precondition on `close_resize` is</span>
+        <span class="comment">// that the first argument gives a valid number of blocks to copy.</span>
+        <span class="kw">unsafe</span> {
+            <span class="self">self</span>.<span class="ident">bits</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">clone_resize</span>(<span class="self">self</span>.<span class="ident">block_len</span>(), <span class="ident">block_cap</span>);
         }
     }
 
@@ -947,7 +971,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reserve_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">additional</span>: <span class="ident">u64</span>) {
         <span class="kw">let</span> <span class="ident">new_cap</span> <span class="op">=</span> <span class="ident">Block</span>::<span class="ident">ceil_div_nbits</span>(<span class="self">self</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">additional</span>);
         <span class="kw">if</span> <span class="ident">new_cap</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">block_capacity</span>() {
-            <span class="self">self</span>.<span class="ident">bits</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">clone_resize</span>(<span class="self">self</span>.<span class="ident">block_len</span>(), <span class="ident">new_cap</span>);
+            <span class="self">self</span>.<span class="ident">reallocate</span>(<span class="ident">new_cap</span>);
         }
     }
 
@@ -966,7 +990,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">block_reserve_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">additional</span>: <span class="ident">usize</span>) {
         <span class="kw">let</span> <span class="ident">new_cap</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">block_len</span>() <span class="op">+</span> <span class="ident">additional</span>;
         <span class="kw">if</span> <span class="ident">new_cap</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">block_capacity</span>() {
-            <span class="self">self</span>.<span class="ident">bits</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">clone_resize</span>(<span class="self">self</span>.<span class="ident">block_len</span>(), <span class="ident">new_cap</span>);
+            <span class="self">self</span>.<span class="ident">reallocate</span>(<span class="ident">new_cap</span>);
         }
     }
 
@@ -989,8 +1013,9 @@
     <span class="doccomment">/// assert_eq!(bv.capacity(), 24);</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shrink_to_fit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">block_capacity</span>() <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">block_len</span>() {
-            <span class="self">self</span>.<span class="ident">bits</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">clone_resize</span>(<span class="self">self</span>.<span class="ident">block_len</span>(), <span class="self">self</span>.<span class="ident">block_len</span>());
+        <span class="kw">let</span> <span class="ident">block_len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">block_len</span>();
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">block_capacity</span>() <span class="op">&gt;</span> <span class="ident">block_len</span> {
+            <span class="self">self</span>.<span class="ident">reallocate</span>(<span class="ident">block_len</span>);
         }
     }
 
@@ -1096,6 +1121,10 @@
     <span class="doccomment">/// assert_eq!( slice[2], true );</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">BitSlice</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
+        <span class="comment">// We know this is safe because the precondition on `from_raw_parts` is</span>
+        <span class="comment">// that all the bits be in bounds. If `self.len == 0` then there are no</span>
+        <span class="comment">// bits to access, so it&#39;s okay that the pointer dangles. Otherwise, the</span>
+        <span class="comment">// bits from `0 .. self.len` are in bounds.</span>
         <span class="kw">unsafe</span> {
             <span class="ident">BitSlice</span>::<span class="ident">from_raw_parts</span>(<span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">as_ptr</span>(), <span class="number">0</span>, <span class="self">self</span>.<span class="ident">len</span>)
         }
@@ -1118,6 +1147,7 @@
     <span class="doccomment">/// assert_eq!( bv[1], true );</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_mut_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">BitSliceMut</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
+        <span class="comment">// We know this is safe for the same reason that `as_slice` is safe.</span>
         <span class="kw">unsafe</span> {
             <span class="ident">BitSliceMut</span>::<span class="ident">from_raw_parts</span>(<span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">as_mut_ptr</span>(), <span class="number">0</span>, <span class="self">self</span>.<span class="ident">len</span>)
         }
