@@ -228,9 +228,14 @@
 <span id="171">171</span>
 <span id="172">172</span>
 <span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
 </pre><pre class="rust ">
 <span class="kw">mod</span> <span class="ident">bits</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">bits</span>::<span class="ident">Bits</span>;
+<span class="kw">pub</span> (<span class="kw">crate</span>) <span class="kw">use</span> <span class="self">self</span>::<span class="ident">bits</span>::<span class="ident">get_masked_block</span>;
 
 <span class="kw">mod</span> <span class="ident">bits_ext</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">bits_ext</span>::<span class="ident">BitsExt</span>;
@@ -238,11 +243,14 @@
 <span class="kw">mod</span> <span class="ident">bits_mut</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">bits_mut</span>::<span class="ident">BitsMut</span>;
 
+<span class="kw">mod</span> <span class="ident">bits_mut_ext</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">bits_mut_ext</span>::<span class="ident">BitsMutExt</span>;
+
 <span class="kw">mod</span> <span class="ident">bits_push</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">bits_push</span>::<span class="ident">BitsPush</span>;
 
 <span class="kw">mod</span> <span class="ident">bit_sliceable</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">bit_sliceable</span>::<span class="ident">BitSliceable</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">bit_sliceable</span>::{<span class="ident">BitSliceable</span>, <span class="ident">BitSliceableMut</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {

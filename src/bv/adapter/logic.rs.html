@@ -328,10 +328,24 @@
 <span id="271">271</span>
 <span id="272">272</span>
 <span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> {<span class="ident">Bits</span>, <span class="ident">BitSliceable</span>};
 <span class="kw">use</span> <span class="ident">BlockType</span>;
 <span class="kw">use</span> <span class="ident">iter</span>::<span class="ident">BlockIter</span>;
+
+<span class="kw">use</span> <span class="ident">traits</span>::<span class="ident">get_masked_block</span>;
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 
@@ -429,11 +443,11 @@
     }
 
     <span class="kw">fn</span> <span class="ident">block1</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span> {
-        <span class="self">self</span>.<span class="ident">op1</span>.<span class="ident">get_block</span>(<span class="ident">position</span>)
+        <span class="self">self</span>.<span class="ident">op1</span>.<span class="ident">get_raw_block</span>(<span class="ident">position</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">block2</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span> {
-        <span class="self">self</span>.<span class="ident">op2</span>.<span class="ident">get_block</span>(<span class="ident">position</span>)
+        <span class="self">self</span>.<span class="ident">op2</span>.<span class="ident">get_raw_block</span>(<span class="ident">position</span>)
     }
 }
 
@@ -450,6 +464,10 @@
 
     <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
         <span class="op">!</span><span class="self">self</span>.<span class="number">0</span>.<span class="ident">get_block</span>(<span class="ident">position</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
+        <span class="op">!</span><span class="self">self</span>.<span class="number">0</span>.<span class="ident">get_raw_block</span>(<span class="ident">position</span>)
     }
 }
 
@@ -493,10 +511,18 @@
             }
 
             <span class="kw">fn</span> <span class="ident">get_bit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="macro">assert</span><span class="macro">!</span>( <span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">bit_len</span>(),
+                         <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}::get_bit: out of bounds&quot;</span>, <span class="macro">stringify</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">target</span>)) );
                 <span class="self">self</span>.<span class="number">0</span>.<span class="ident">bit1</span>(<span class="ident">position</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bool_op</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">bit2</span>(<span class="ident">position</span>)
             }
 
             <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
+                <span class="macro">assert</span><span class="macro">!</span>( <span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">block_len</span>(),
+                         <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}::get_block: out of bounds&quot;</span>, <span class="macro">stringify</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">target</span>)) );
+                <span class="ident">get_masked_block</span>(<span class="self">self</span>, <span class="ident">position</span>)
+            }
+
+            <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
                 <span class="self">self</span>.<span class="number">0</span>.<span class="ident">block1</span>(<span class="ident">position</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">block_op</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">block2</span>(<span class="ident">position</span>)
             }
         }
@@ -505,12 +531,11 @@
             <span class="kw">impl</span>[<span class="ident">T</span>: <span class="ident">Bits</span>, <span class="ident">U</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span><span class="op">&gt;</span>] <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">target</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>;
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">target</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
-            <span class="kw">where</span> <span class="ident">R</span>: <span class="ident">Clone</span>,
-                  <span class="ident">T</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-                  <span class="ident">U</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-                  <span class="ident">T</span>::<span class="ident">Slice</span>: <span class="ident">Bits</span>,
-                  <span class="ident">U</span>::<span class="ident">Slice</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">T</span>::<span class="ident">Slice</span> <span class="kw">as</span> <span class="ident">Bits</span><span class="op">&gt;</span>::<span class="ident">Block</span><span class="op">&gt;</span> {
+        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">R</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">target</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+            <span class="kw">where</span> <span class="ident">Block</span>: <span class="ident">BlockType</span>,
+                  <span class="ident">R</span>: <span class="ident">Clone</span>,
+                  <span class="ident">T</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;</span>,
+                  <span class="ident">U</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;</span> {
 
             <span class="kw">type</span> <span class="ident">Slice</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">target</span><span class="op">&lt;</span><span class="ident">T</span>::<span class="ident">Slice</span>, <span class="ident">U</span>::<span class="ident">Slice</span><span class="op">&gt;</span>;
 
@@ -543,7 +568,7 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">Bits</span> <span class="kw">for</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>
     <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Bits</span>,
           <span class="ident">U</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span><span class="op">&gt;</span>,
-          <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span> {
+          <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">T</span>::<span class="ident">Block</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span> {
     <span class="kw">type</span> <span class="ident">Block</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span>;
 
     <span class="kw">fn</span> <span class="ident">bit_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
@@ -551,28 +576,27 @@
     }
 
     <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
-        <span class="kw">let</span> <span class="ident">block_len</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span>::<span class="ident">block_bits</span>(<span class="self">self</span>.<span class="ident">bit_len</span>(), <span class="ident">position</span>);
-        (<span class="self">self</span>.<span class="ident">fun</span>)(<span class="self">self</span>.<span class="ident">ops</span>.<span class="ident">block1</span>(<span class="ident">position</span>),
-                   <span class="self">self</span>.<span class="ident">ops</span>.<span class="ident">block2</span>(<span class="ident">position</span>),
-                   <span class="ident">block_len</span>)
-            .<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">block_len</span>)
+        <span class="macro">assert</span><span class="macro">!</span>( <span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">block_len</span>(), <span class="string">&quot;BitZip::get_block: out of bounds&quot;</span> );
+        <span class="ident">get_masked_block</span>(<span class="self">self</span>, <span class="ident">position</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
+        (<span class="self">self</span>.<span class="ident">fun</span>)(<span class="self">self</span>.<span class="ident">ops</span>.<span class="ident">block1</span>(<span class="ident">position</span>), <span class="self">self</span>.<span class="ident">ops</span>.<span class="ident">block2</span>(<span class="ident">position</span>))
     }
 }
 
 <span class="macro">impl_index_from_bits</span><span class="macro">!</span> {
     <span class="kw">impl</span>[<span class="ident">T</span>: <span class="ident">Bits</span>, <span class="ident">U</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span><span class="op">&gt;</span>,
-         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span>]
+         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">T</span>::<span class="ident">Block</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span>]
         <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">R</span>, <span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>
     <span class="kw">where</span> <span class="ident">Block</span>: <span class="ident">BlockType</span>,
           <span class="ident">R</span>: <span class="ident">Clone</span>,
-          <span class="ident">T</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-          <span class="ident">U</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-          <span class="ident">T</span>::<span class="ident">Slice</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;</span>,
-          <span class="ident">U</span>::<span class="ident">Slice</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;</span>,
-          <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Block</span>, <span class="ident">Block</span>, <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
+          <span class="ident">T</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;</span>,
+          <span class="ident">U</span>: <span class="ident">BitSliceable</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;</span>,
+          <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Block</span>, <span class="ident">Block</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
 
     <span class="kw">type</span> <span class="ident">Slice</span> <span class="op">=</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>::<span class="ident">Slice</span>, <span class="ident">U</span>::<span class="ident">Slice</span>, <span class="ident">F</span><span class="op">&gt;</span>;
 
@@ -587,7 +611,7 @@
 
 <span class="macro">impl_bit_sliceable_adapter</span><span class="macro">!</span> {
     <span class="kw">impl</span>[<span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Bits</span>, <span class="ident">U</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span><span class="op">&gt;</span>,
-         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span>]
+         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">T</span>::<span class="ident">Block</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span>]
         <span class="ident">BitSliceable</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">BitZip</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>;
 }
 
@@ -595,7 +619,7 @@
     <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Bits</span>,
           <span class="ident">U</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span><span class="op">&gt;</span>,
           <span class="ident">V</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span><span class="op">&gt;</span>,
-          <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span> {
+          <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>::<span class="ident">Block</span>, <span class="ident">T</span>::<span class="ident">Block</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span> {
 
     <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">V</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="self">self</span>) <span class="op">==</span> <span class="ident">BlockIter</span>::<span class="ident">new</span>(<span class="ident">other</span>)

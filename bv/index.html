@@ -59,7 +59,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/bv/lib.rs.html#1-131' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>The main type exported by the library, <a href="struct.BitVec.html"><code>BitVec</code></a>, is a packed,
+               </span><a class='srclink' href='../src/bv/lib.rs.html#1-132' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>The main type exported by the library, <a href="struct.BitVec.html"><code>BitVec</code></a>, is a packed,
 growable bit-vector. Its API mirrors that of <code>Vec</code> where reasonable.</p>
 <p>The library also defines slice operations that return
 <a href="struct.BitSlice.html"><code>BitSlice</code></a> or <a href="struct.BitSliceMut.html"><code>BitSliceMut</code></a>, akin to Rust’s array slices but for
@@ -123,7 +123,7 @@ allocating an intermediate result:</p>
 <h1 id="usage" class="section-header"><a href="#usage">Usage</a></h1>
 <p>It’s <a href="https://crates.io/crates/bv">on crates.io</a>, so you can add</p>
 <pre><code class="language-toml">[dependencies]
-bv = &quot;0.9.0&quot;
+bv = &quot;0.10.0&quot;
 </code></pre>
 <p>to your <code>Cargo.toml</code> and</p>
 
@@ -185,6 +185,14 @@ bv = &quot;0.9.0&quot;
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="trait" href="trait.BitSliceableMut.html"
+                                  title='trait bv::BitSliceableMut'>BitSliceableMut</a></td>
+                           <td class='docblock-short'>
+                                <p>Types that produce mutable slices.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="trait" href="trait.Bits.html"
                                   title='trait bv::Bits'>Bits</a></td>
                            <td class='docblock-short'>
@@ -205,6 +213,14 @@ bv = &quot;0.9.0&quot;
                                   title='trait bv::BitsMut'>BitsMut</a></td>
                            <td class='docblock-short'>
                                 <p>Mutable bit vector operations that don’t affect the length.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.BitsMutExt.html"
+                                  title='trait bv::BitsMutExt'>BitsMutExt</a></td>
+                           <td class='docblock-short'>
+                                <p>Extension trait for mutable operations on bit slices.</p>
 
                            </td>
                        </tr>

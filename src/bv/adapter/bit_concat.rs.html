@@ -132,14 +132,10 @@
 <span id="75">75</span>
 <span id="76">76</span>
 <span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">Bits</span>;
 <span class="kw">use</span> <span class="ident">BlockType</span>;
 <span class="kw">use</span> <span class="ident">iter</span>::<span class="ident">BlockIter</span>;
-
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 
 <span class="doccomment">/// The result of</span>
 <span class="doccomment">/// [`BitsExt::bit_concat`](../trait.BitsExt.html#method.bit_concat).</span>
@@ -176,21 +172,21 @@
 
     <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
         <span class="kw">let</span> <span class="ident">start_bit</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">position</span>);
-        <span class="kw">let</span> <span class="ident">limit_bit</span> <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">min</span>(<span class="ident">start_bit</span> <span class="op">+</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="kw">as</span> <span class="ident">u64</span>,
-                                 <span class="self">self</span>.<span class="ident">bit_len</span>());
+        <span class="kw">let</span> <span class="ident">count</span>     <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">block_bits</span>(<span class="self">self</span>.<span class="ident">bit_len</span>(), <span class="ident">position</span>);
+        <span class="kw">let</span> <span class="ident">limit_bit</span> <span class="op">=</span> <span class="ident">start_bit</span> <span class="op">+</span> <span class="ident">count</span> <span class="kw">as</span> <span class="ident">u64</span>;
 
         <span class="kw">let</span> <span class="ident">len0</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">bit_len</span>();
         <span class="kw">if</span> <span class="ident">limit_bit</span> <span class="op">&lt;=</span> <span class="ident">len0</span> {
             <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get_block</span>(<span class="ident">position</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">start_bit</span> <span class="op">&lt;</span> <span class="ident">len0</span> {
-            <span class="kw">let</span> <span class="ident">block1</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get_block</span>(<span class="ident">position</span>);
-            <span class="kw">let</span> <span class="ident">block2</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">1</span>.<span class="ident">get_block</span>(<span class="number">0</span>);
+            <span class="kw">let</span> <span class="ident">block1</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get_raw_block</span>(<span class="ident">position</span>);
+            <span class="kw">let</span> <span class="ident">block2</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">1</span>.<span class="ident">get_raw_block</span>(<span class="number">0</span>);
             <span class="kw">let</span> <span class="ident">size1</span>  <span class="op">=</span> (<span class="ident">len0</span> <span class="op">-</span> <span class="ident">start_bit</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-            <span class="kw">let</span> <span class="ident">size2</span>  <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="op">-</span> <span class="ident">size1</span>;
+            <span class="kw">let</span> <span class="ident">size2</span>  <span class="op">=</span> <span class="ident">count</span> <span class="op">-</span> <span class="ident">size1</span>;
             <span class="ident">block1</span>.<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">size1</span>) <span class="op">|</span>
                 (<span class="ident">block2</span>.<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">size2</span>) <span class="op">&lt;&lt;</span> <span class="ident">size1</span>)
         } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="number">1</span>.<span class="ident">get_bits</span>(<span class="ident">start_bit</span> <span class="op">-</span> <span class="ident">len0</span>, (<span class="ident">limit_bit</span> <span class="op">-</span> <span class="ident">start_bit</span>) <span class="kw">as</span> <span class="ident">usize</span>)
+            <span class="self">self</span>.<span class="number">1</span>.<span class="ident">get_bits</span>(<span class="ident">start_bit</span> <span class="op">-</span> <span class="ident">len0</span>, <span class="ident">count</span>)
         }
     }
 }

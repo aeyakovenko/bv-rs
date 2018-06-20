@@ -571,6 +571,35 @@
 <span id="514">514</span>
 <span id="515">515</span>
 <span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>;
@@ -660,8 +689,8 @@
     <span class="doccomment">/// The number of bits in the block at `position`, given a total bit length</span>
     <span class="doccomment">/// of `len`.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// This will be `Self::nbits()` for all but the last block, for which it will</span>
-    <span class="doccomment">/// be `Self::last_block_bits(len)`.</span>
+    <span class="doccomment">/// This will be `Self::nbits()` for all but the last block, for which it may</span>
+    <span class="doccomment">/// be less.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Precondition</span>
     <span class="doccomment">///</span>
@@ -671,23 +700,15 @@
     <span class="kw">fn</span> <span class="ident">block_bits</span>(<span class="ident">len</span>: <span class="ident">u64</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
         <span class="kw">let</span> <span class="ident">block_start</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">mul_nbits</span>(<span class="ident">position</span>);
         <span class="kw">let</span> <span class="ident">block_limit</span> <span class="op">=</span> <span class="ident">block_start</span> <span class="op">+</span> <span class="self">Self</span>::<span class="ident">nbits</span>() <span class="kw">as</span> <span class="ident">u64</span>;
-        <span class="kw">if</span> <span class="ident">block_limit</span> <span class="op">&lt;=</span> <span class="ident">len</span> {
-            <span class="self">Self</span>::<span class="ident">nbits</span>()
-        } <span class="kw">else</span> {
-            (<span class="ident">len</span> <span class="op">-</span> <span class="ident">block_start</span>) <span class="kw">as</span> <span class="ident">usize</span>
-        }
-    }
 
-    <span class="doccomment">/// Computes how many bits are in the last block of an array of</span>
-    <span class="doccomment">/// `len` bits.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is like `Self::mod_nbits`, but it returns `Self::nbits()` in</span>
-    <span class="doccomment">/// lieu of 0. Note that this means that if you have 0 bits then the</span>
-    <span class="doccomment">/// last block is full.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">last_block_bits</span>(<span class="ident">len</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
-        <span class="kw">let</span> <span class="ident">masked</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">mod_nbits</span>(<span class="ident">len</span>);
-        <span class="kw">if</span> <span class="ident">masked</span> <span class="op">==</span> <span class="number">0</span> { <span class="self">Self</span>::<span class="ident">nbits</span>() } <span class="kw">else</span> { <span class="ident">masked</span> }
+        <span class="macro">debug_assert</span><span class="macro">!</span>( <span class="ident">block_start</span> <span class="op">&lt;=</span> <span class="ident">len</span>,
+                       <span class="string">&quot;BlockType::block_bits: precondition&quot;</span> );
+
+        <span class="ident">usize</span>::<span class="ident">if_then_else</span>(
+            <span class="ident">block_limit</span> <span class="op">&lt;=</span> <span class="ident">len</span>,
+            <span class="self">Self</span>::<span class="ident">nbits</span>(),
+            <span class="ident">len</span>.<span class="ident">wrapping_sub</span>(<span class="ident">block_start</span>) <span class="kw">as</span> <span class="ident">usize</span>
+        )
     }
 
     <span class="doccomment">/// Log-base-2 of the number of bits in a block.</span>
@@ -705,6 +726,9 @@
     <span class="doccomment">/// The bit mask consisting of `Self::nbits() - element_bits` zeroes</span>
     <span class="doccomment">/// followed by `element_bits` ones.</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// The default implementation has a branch, but should be overrided with</span>
+    <span class="doccomment">/// a branchless algorithm if possible.</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Precondition</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// `element_bits &lt;= Self::nbits()`</span>
@@ -721,7 +745,7 @@
 
     <span class="doccomment">/// The bit mask with the `bit_index`th bit set.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Bits are index in little-endian style based at 0.</span>
+    <span class="doccomment">/// Bits are indexed in little-endian style based at 0.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Precondition</span>
     <span class="doccomment">///</span>
@@ -791,16 +815,26 @@
     <span class="doccomment">/// Returns the smallest number `n` such that `2.pow(n) &gt;= self`.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">ceil_lg</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
-        <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;=</span> <span class="self">Self</span>::<span class="ident">one</span>() { <span class="kw">return</span> <span class="number">0</span>; }
-        <span class="self">Self</span>::<span class="ident">nbits</span>() <span class="op">-</span> (<span class="self">self</span> <span class="op">-</span> <span class="self">Self</span>::<span class="ident">one</span>()).<span class="ident">leading_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span>
+        <span class="ident">usize</span>::<span class="ident">if_then</span>(
+            <span class="self">self</span> <span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">one</span>(),
+            <span class="self">Self</span>::<span class="ident">nbits</span>().<span class="ident">wrapping_sub</span>((<span class="self">self</span>.<span class="ident">wrapping_sub</span>(<span class="self">Self</span>::<span class="ident">one</span>())).<span class="ident">leading_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span>)
+        )
     }
 
     <span class="doccomment">/// Returns the largest number `n` such that `2.pow(n) &lt;= self`.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">floor_lg</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
-        <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;=</span> <span class="self">Self</span>::<span class="ident">one</span>() { <span class="kw">return</span> <span class="number">0</span>; }
-        <span class="self">Self</span>::<span class="ident">nbits</span>() <span class="op">-</span> <span class="number">1</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">leading_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span>
+        <span class="ident">usize</span>::<span class="ident">if_then</span>(
+            <span class="self">self</span> <span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">one</span>(),
+            <span class="self">Self</span>::<span class="ident">nbits</span>().<span class="ident">wrapping_sub</span>(<span class="number">1</span>).<span class="ident">wrapping_sub</span>(<span class="self">self</span>.<span class="ident">leading_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span>)
+        )
     }
+
+    <span class="doccomment">/// A shift-left operation that does not overflow.</span>
+    <span class="kw">fn</span> <span class="ident">wrapping_shl</span>(<span class="self">self</span>, <span class="ident">shift</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+
+    <span class="doccomment">/// A subtraction operation that does not overflow.</span>
+    <span class="kw">fn</span> <span class="ident">wrapping_sub</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Returns the number of leading zero bits in the given number.</span>
     <span class="kw">fn</span> <span class="ident">leading_zeros</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span>;
@@ -815,10 +849,29 @@
     <span class="kw">fn</span> <span class="ident">one</span>() <span class="op">-&gt;</span> <span class="self">Self</span>;
 }
 
+<span class="kw">trait</span> <span class="ident">IfThenElse</span> {
+    <span class="kw">fn</span> <span class="ident">if_then_else</span>(<span class="ident">cond</span>: <span class="ident">bool</span>, <span class="ident">then_val</span>: <span class="self">Self</span>, <span class="ident">else_val</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">if_then</span>(<span class="ident">cond</span>: <span class="ident">bool</span>, <span class="ident">then_val</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+}
+
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_block_type</span> {
     ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ident</span> )
         <span class="op">=&gt;</span>
     {
+        <span class="kw">impl</span> <span class="ident">IfThenElse</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
+            <span class="attribute">#[<span class="ident">inline</span>]</span>
+            <span class="kw">fn</span> <span class="ident">if_then_else</span>(<span class="ident">cond</span>: <span class="ident">bool</span>, <span class="ident">then_val</span>: <span class="self">Self</span>, <span class="ident">else_val</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+                <span class="kw">let</span> <span class="ident">then_cond</span> <span class="op">=</span> <span class="ident">cond</span> <span class="kw">as</span> <span class="self">Self</span>;
+                <span class="kw">let</span> <span class="ident">else_cond</span> <span class="op">=</span> <span class="number">1</span> <span class="op">-</span> <span class="ident">then_cond</span>;
+                (<span class="ident">then_cond</span> <span class="op">*</span> <span class="ident">then_val</span>) <span class="op">|</span> (<span class="ident">else_cond</span> <span class="op">*</span> <span class="ident">else_val</span>)
+            }
+
+            <span class="attribute">#[<span class="ident">inline</span>]</span>
+            <span class="kw">fn</span> <span class="ident">if_then</span>(<span class="ident">cond</span>: <span class="ident">bool</span>, <span class="ident">then_val</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+                (<span class="ident">cond</span> <span class="kw">as</span> <span class="self">Self</span>) <span class="op">*</span> <span class="ident">then_val</span>
+            }
+        }
+
         <span class="kw">impl</span> <span class="ident">BlockType</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
             <span class="comment">// The default `low_mask` has a branch, but we can do better if we have</span>
             <span class="comment">// `wrapping_shl`. That isn&#39;t a member of any trait, but all the primitive</span>
@@ -828,12 +881,22 @@
                 <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">k</span> <span class="op">&lt;=</span> <span class="self">Self</span>::<span class="ident">nbits</span>());
 
                 <span class="comment">// Compute the mask when element_bits is not the word size:</span>
-                <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">one</span>().<span class="ident">wrapping_shl</span>(<span class="ident">k</span> <span class="kw">as</span> <span class="ident">u32</span>) <span class="op">-</span> <span class="number">1</span>;
+                <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">one</span>().<span class="ident">wrapping_shl</span>(<span class="ident">k</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">wrapping_sub</span>(<span class="number">1</span>);
 
                 <span class="comment">// Special case for the word size:</span>
                 <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> (<span class="self">Self</span>::<span class="ident">div_nbits</span>(<span class="ident">k</span> <span class="kw">as</span> <span class="ident">u64</span>) <span class="op">&amp;</span> <span class="number">1</span>) <span class="kw">as</span> <span class="self">Self</span> <span class="op">*</span> <span class="op">!</span><span class="number">0</span>;
 
                 <span class="ident">a</span> <span class="op">|</span> <span class="ident">b</span>
+            }
+
+            <span class="attribute">#[<span class="ident">inline</span>]</span>
+            <span class="kw">fn</span> <span class="ident">wrapping_shl</span>(<span class="self">self</span>, <span class="ident">shift</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+                <span class="self">self</span>.<span class="ident">wrapping_shl</span>(<span class="ident">shift</span>)
+            }
+
+            <span class="attribute">#[<span class="ident">inline</span>]</span>
+            <span class="kw">fn</span> <span class="ident">wrapping_sub</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+                <span class="self">self</span>.<span class="ident">wrapping_sub</span>(<span class="ident">other</span>)
             }
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -942,11 +1005,6 @@
 
         <span class="kw">fn</span> <span class="ident">prop_mul_nbits</span>(<span class="ident">n</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
             <span class="ident">u32</span>::<span class="ident">mul_nbits</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">==</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">*</span> <span class="number">32</span>
-        }
-
-        <span class="kw">fn</span> <span class="ident">prop_last_block_bits</span>(<span class="ident">n</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-            <span class="ident">u32</span>::<span class="ident">last_block_bits</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">u64</span>) <span class="op">==</span>
-                 <span class="kw">if</span> <span class="ident">n</span> <span class="op">%</span> <span class="number">32</span> <span class="op">==</span> <span class="number">0</span> { <span class="number">32</span> } <span class="kw">else</span> { <span class="ident">n</span> <span class="op">%</span> <span class="number">32</span> } <span class="kw">as</span> <span class="ident">usize</span>
         }
     }
 

@@ -331,6 +331,53 @@
 <span id="274">274</span>
 <span id="275">275</span>
 <span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">BitsMut</span>;
 <span class="kw">use</span> <span class="ident">storage</span>::{<span class="ident">BlockType</span>, <span class="ident">Address</span>};
@@ -340,11 +387,15 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Minimal complete definition is:</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///   - `bit_len` and</span>
-<span class="doccomment">///   - `get_bit` or `get_block`, since each is defined in terms of the other.</span>
+<span class="doccomment">///   - [`bit_len`] and</span>
+<span class="doccomment">///   - [`get_block`] or [`get_bit`].</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// Note that `get_block` in terms of `get_bit` is inefficient, and thus</span>
-<span class="doccomment">/// you should implement `get_block` directly if possible.</span>
+<span class="doccomment">/// Note that [`get_block`] in terms of [`get_bit`] is inefficient, and thus</span>
+<span class="doccomment">/// you should implement [`get_block`] directly if possible.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`bit_len`]: #method.bit_len</span>
+<span class="doccomment">/// [`get_bit`]: #method.get_bit</span>
+<span class="doccomment">/// [`get_block`]: #method.get_block</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Bits</span> {
     <span class="doccomment">/// The underlying block type used to store the bits of the vector.</span>
     <span class="kw">type</span> <span class="ident">Block</span>: <span class="ident">BlockType</span>;
@@ -369,19 +420,20 @@
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">position</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">bit_len</span>(), <span class="string">&quot;Bits::get_bit: out of bounds&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">address</span> <span class="op">=</span> <span class="ident">Address</span>::<span class="ident">new</span>::<span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Block</span><span class="op">&gt;</span>(<span class="ident">position</span>);
-        <span class="kw">let</span> <span class="ident">block</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_block</span>(<span class="ident">address</span>.<span class="ident">block_index</span>);
+        <span class="kw">let</span> <span class="ident">block</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_raw_block</span>(<span class="ident">address</span>.<span class="ident">block_index</span>);
         <span class="ident">block</span>.<span class="ident">get_bit</span>(<span class="ident">address</span>.<span class="ident">bit_offset</span>)
     }
 
-    <span class="doccomment">/// Gets the block at `position`</span>
+    <span class="doccomment">/// Gets the block at `position`, masked as necessary.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The bits are laid out `Block::nbits()` per block, with the notional</span>
     <span class="doccomment">/// zeroth bit in the least significant position. If `self.bit_len()` is</span>
     <span class="doccomment">/// not a multiple of `Block::nbits()` then the last block will</span>
-    <span class="doccomment">/// contain extra bits that are not part of the bit vector.</span>
+    <span class="doccomment">/// contain extra zero bits that are not part of the bit vector.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// The default implementation assembles a block by reading each of its</span>
-    <span class="doccomment">/// bits. Consider it a slow reference implementation, and override it.</span>
+    <span class="doccomment">/// The default implementation calls [`get_raw_block`](#method.get_raw_block),</span>
+    <span class="doccomment">/// but you can override with something more efficient, for example if masking</span>
+    <span class="doccomment">/// is unnecessary.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Panics</span>
     <span class="doccomment">///</span>
@@ -391,19 +443,34 @@
                 <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Bits::get_block: out of bounds ({}/{})&quot;</span>,
                         <span class="ident">position</span>, <span class="self">self</span>.<span class="ident">block_len</span>()));
 
-        <span class="kw">let</span> <span class="ident">bit_position</span> <span class="op">=</span> <span class="ident">position</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">*</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="kw">as</span> <span class="ident">u64</span>;
+        <span class="kw">let</span> <span class="ident">first_bit</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">mul_nbits</span>(<span class="ident">position</span>);
+        <span class="kw">let</span> <span class="ident">bit_count</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">block_bits</span>(<span class="self">self</span>.<span class="ident">bit_len</span>(), <span class="ident">position</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">zero</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mask</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">one</span>();
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="kw">as</span> <span class="ident">u64</span> {
-            <span class="kw">if</span> <span class="ident">bit_position</span> <span class="op">+</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">bit_len</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">get_bit</span>(<span class="ident">bit_position</span> <span class="op">+</span> <span class="ident">i</span>) {
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="ident">bit_count</span> <span class="kw">as</span> <span class="ident">u64</span> {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">get_bit</span>(<span class="ident">first_bit</span> <span class="op">+</span> <span class="ident">i</span>) {
                 <span class="ident">result</span> <span class="op">=</span> <span class="ident">result</span> <span class="op">|</span> <span class="ident">mask</span>;
             }
             <span class="ident">mask</span> <span class="op">=</span> <span class="ident">mask</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>;
         }
 
         <span class="ident">result</span>
+    }
+
+    <span class="doccomment">/// Gets the block at `position`, without masking.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The default implementation of this method just delegates to [`get_block`](#method</span>
+    <span class="doccomment">/// .get_block), which means it in fact does mask out extraneous bits. However, particular</span>
+    <span class="doccomment">/// implementors may override this method to provide a more efficient implementation when</span>
+    <span class="doccomment">/// one is possible.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Panics</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Panics if `position` is out of bounds.</span>
+    <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
+        <span class="self">self</span>.<span class="ident">get_block</span>(<span class="ident">position</span>)
     }
 
     <span class="doccomment">/// Gets `count` bits starting at bit index `start`, interpreted as a</span>
@@ -420,14 +487,14 @@
         <span class="kw">let</span> <span class="ident">margin</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Block</span>::<span class="ident">nbits</span>() <span class="op">-</span> <span class="ident">address</span>.<span class="ident">bit_offset</span>;
 
         <span class="kw">if</span> <span class="ident">margin</span> <span class="op">&gt;=</span> <span class="ident">count</span> {
-            <span class="kw">let</span> <span class="ident">block</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_block</span>(<span class="ident">address</span>.<span class="ident">block_index</span>);
+            <span class="kw">let</span> <span class="ident">block</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_raw_block</span>(<span class="ident">address</span>.<span class="ident">block_index</span>);
             <span class="kw">return</span> <span class="ident">block</span>.<span class="ident">get_bits</span>(<span class="ident">address</span>.<span class="ident">bit_offset</span>, <span class="ident">count</span>)
         }
 
         <span class="kw">let</span> <span class="ident">extra</span> <span class="op">=</span> <span class="ident">count</span> <span class="op">-</span> <span class="ident">margin</span>;
 
-        <span class="kw">let</span> <span class="ident">block1</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_block</span>(<span class="ident">address</span>.<span class="ident">block_index</span>);
-        <span class="kw">let</span> <span class="ident">block2</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_block</span>(<span class="ident">address</span>.<span class="ident">block_index</span> <span class="op">+</span> <span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">block1</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_raw_block</span>(<span class="ident">address</span>.<span class="ident">block_index</span>);
+        <span class="kw">let</span> <span class="ident">block2</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_raw_block</span>(<span class="ident">address</span>.<span class="ident">block_index</span> <span class="op">+</span> <span class="number">1</span>);
 
         <span class="kw">let</span> <span class="ident">low_bits</span> <span class="op">=</span> <span class="ident">block1</span>.<span class="ident">get_bits</span>(<span class="ident">address</span>.<span class="ident">bit_offset</span>, <span class="ident">margin</span>);
         <span class="kw">let</span> <span class="ident">high_bits</span> <span class="op">=</span> <span class="ident">block2</span>.<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">extra</span>);
@@ -441,6 +508,13 @@
     <span class="kw">fn</span> <span class="ident">to_bit_vec</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">BitVec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Block</span><span class="op">&gt;</span> {
         <span class="ident">BitVec</span>::<span class="ident">from_bits</span>(<span class="self">self</span>)
     }
+}
+
+<span class="doccomment">/// Gets a block using `get_raw_block` and then masks it appropriately.</span>
+<span class="doccomment">/// This can be used to implement `get_block` in terms of `get_raw_block`.</span>
+<span class="kw">pub</span> (<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_masked_block</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Bits</span><span class="op">&gt;</span>(<span class="ident">bits</span>: <span class="ident">T</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>::<span class="ident">Block</span> {
+    <span class="kw">let</span> <span class="ident">block_bits</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">Block</span>::<span class="ident">block_bits</span>(<span class="ident">bits</span>.<span class="ident">bit_len</span>(), <span class="ident">position</span>);
+    <span class="ident">bits</span>.<span class="ident">get_raw_block</span>(<span class="ident">position</span>).<span class="ident">get_bits</span>(<span class="number">0</span>, <span class="ident">block_bits</span>)
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Bits</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> <span class="ident">Bits</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span> {
@@ -460,6 +534,10 @@
 
     <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
         <span class="ident">T</span>::<span class="ident">get_block</span>(<span class="kw-2">*</span><span class="self">self</span>, <span class="ident">position</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
+        <span class="ident">T</span>::<span class="ident">get_raw_block</span>(<span class="kw-2">*</span><span class="self">self</span>, <span class="ident">position</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">get_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">u64</span>, <span class="ident">count</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
@@ -486,6 +564,10 @@
         <span class="ident">T</span>::<span class="ident">get_block</span>(<span class="kw-2">*</span><span class="self">self</span>, <span class="ident">position</span>)
     }
 
+    <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
+        <span class="ident">T</span>::<span class="ident">get_raw_block</span>(<span class="kw-2">*</span><span class="self">self</span>, <span class="ident">position</span>)
+    }
+
     <span class="kw">fn</span> <span class="ident">get_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">u64</span>, <span class="ident">count</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
         <span class="ident">T</span>::<span class="ident">get_bits</span>(<span class="kw-2">*</span><span class="self">self</span>, <span class="ident">start</span>, <span class="ident">count</span>)
     }
@@ -510,6 +592,10 @@
         (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">get_block</span>(<span class="ident">position</span>)
     }
 
+    <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">get_raw_block</span>(<span class="ident">position</span>)
+    }
+
     <span class="kw">fn</span> <span class="ident">get_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">u64</span>, <span class="ident">count</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
         (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">get_bits</span>(<span class="ident">start</span>, <span class="ident">count</span>)
     }
@@ -532,6 +618,10 @@
 
     <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
         (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">get_block</span>(<span class="ident">position</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">get_raw_block</span>(<span class="ident">position</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">get_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">u64</span>, <span class="ident">count</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Block</span> {
@@ -577,6 +667,10 @@
 
     <span class="kw">fn</span> <span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
         <span class="op">&lt;</span>[<span class="ident">Block</span>]<span class="op">&gt;</span>::<span class="ident">get_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Block</span> {
+        <span class="op">&lt;</span>[<span class="ident">Block</span>]<span class="op">&gt;</span>::<span class="ident">get_raw_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">position</span>)
     }
 }
 

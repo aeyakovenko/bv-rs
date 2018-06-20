@@ -663,12 +663,24 @@
 <span id="606">606</span>
 <span id="607">607</span>
 <span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">storage</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">slice</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">traits</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::{<span class="ident">max</span>, <span class="ident">Ordering</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 
 <span class="kw">mod</span> <span class="ident">inner</span>;
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">inner</span>::<span class="ident">Inner</span>;
@@ -823,12 +835,22 @@
     <span class="doccomment">/// the same block type.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_bits</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">Bits</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&gt;&gt;</span>(<span class="ident">bits</span>: <span class="ident">B</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">block_len</span> <span class="op">=</span> <span class="ident">bits</span>.<span class="ident">block_len</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="self">Self</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">from_block</span>(<span class="ident">Block</span>::<span class="ident">zero</span>(), <span class="ident">block_len</span>);
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="ident">block_len</span> {
-            <span class="ident">result</span>.<span class="ident">set_block</span>(<span class="ident">i</span>, <span class="ident">bits</span>.<span class="ident">get_block</span>(<span class="ident">i</span>));
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">block_len</span>);
+
+        <span class="comment">// This is safe because we just allocated the vector to the right size,</span>
+        <span class="comment">// and we fully initialize the vector before setting the size.</span>
+        <span class="kw">unsafe</span> {
+            <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">vec</span>.<span class="ident">as_mut_ptr</span>();
+
+            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="ident">block_len</span> {
+                <span class="ident">ptr</span>::<span class="ident">write</span>(<span class="ident">ptr</span>.<span class="ident">offset</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">isize</span>), <span class="ident">bits</span>.<span class="ident">get_raw_block</span>(<span class="ident">i</span>));
+            }
+
+            <span class="ident">vec</span>.<span class="ident">set_len</span>(<span class="ident">block_len</span>);
         }
 
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="ident">BitVec</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">vec</span>.<span class="ident">into</span>();
         <span class="ident">result</span>.<span class="ident">resize</span>(<span class="ident">bits</span>.<span class="ident">bit_len</span>(), <span class="bool-val">false</span>);
         <span class="ident">result</span>
     }
